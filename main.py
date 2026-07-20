@@ -125,27 +125,22 @@ investment_median = float(df_selection["Investment"].median()) if not df_selecti
 rating_sum = float(df_selection["Rating"].sum())
 
 # Exibição das Métricas em Colunas Globais
-total1, total2, total3, total4, total5 = st.columns(5, gap='large')
+total1, total2, total3, total4, total5 = st.columns([1, 1, 1, 1, 1])
 
 with total1:
-    st.info('Total Investment')
-    st.metric(label="Sum TZS", value=f"{total_investment:,.0f}")
+    st.metric(label="📊 Total Investment", value=f"{total_investment:,.0f}")
 
 with total2:
-    st.info('Most Frequent')
-    st.metric(label="Mode TZS", value=f"{investment_mode:,.0f}")
+    st.metric(label="🔝 Most Frequent", value=f"{investment_mode:,.0f}")
 
 with total3:
-    st.info('Average')
-    st.metric(label="Average TZS", value=f"{investment_mean:,.0f}")
+    st.metric(label="📈 Average", value=f"{investment_mean:,.0f}")
 
 with total4:
-    st.info('Central Earnings')
-    st.metric(label="Median TZS", value=f"{investment_median:,.0f}")
+    st.metric(label="🎯 Central Earnings", value=f"{investment_median:,.0f}")
 
 with total5:
-    st.info('Rating')
-    st.metric(label="Rating Total", value=numerize(rating_sum), help=f"Total Rating: {rating_sum}")
+    st.metric(label="⭐ Rating Total", value=numerize(rating_sum), help=f"Total: {rating_sum}")
 
 st.markdown("""___""")
 
@@ -197,13 +192,19 @@ def graphs():
         )
 
         # Remove fundos cinzas do Plotly para fundir perfeitamente com o fundo azul escuro do app
+        # Adicione essas atualizações de layout logo após criar fig_state e fig_investment:
         fig_state.update_layout(
+            autosize=True,
+            margin=dict(l=20, r=20, t=40, b=20),  # Reduz as margens laterais no celular
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(showgrid=True, gridcolor="#2e374a"),
             yaxis=dict(showgrid=False)
         )
+
         fig_investment.update_layout(
+            autosize=True,
+            margin=dict(l=20, r=20, t=40, b=20),
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(showgrid=True, gridcolor="#2e374a"),
