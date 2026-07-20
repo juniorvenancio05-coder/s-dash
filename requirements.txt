@@ -3,3 +3,5 @@ pandas
 plotly
 streamlit-option-menu
 numerize
+mysql-connector-python
+matplotlib
