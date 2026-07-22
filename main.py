@@ -8,49 +8,60 @@ import os
 import time
 
 # Configuração da página (Deve ser o primeiro comando Streamlit)
-st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
+st.set_page_config(
+    page_title="Dashboard",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded" # Força a abertura do menu lateral
+)
 
 # --- FORÇAR TEMA AZUL ESCURO DIRETAMENTE VIA PYTHON (CSS) ---
-tema_azul_escuro = """
+tema_azul_escuro_mobile = """
     <style>
     /* Ocultar menus padrões do Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* 1. Forçar a cor do fundo geral da página para o seu azul escuro (#001122) */
+    /* Fundo geral da página */
     .stApp {
         background-color: #001122 !important;
         color: #ffffff !important;
     }
 
-    /* Forçar títulos e subtestos para branco */
+    /* Cores de texto globais */
     h1, h2, h3, h4, h5, h6, p, label, .stSubheader {
         color: #ffffff !important;
     }
 
-    /* 2. Estilizar a barra lateral esquerda */
+    /* Barra lateral visível no mobile */
     section[data-testid="stSidebar"] {
         background-color: #0c1929 !important;
         border-right: 1px solid #154c79 !important;
     }
 
-    /* 3. Estilizar as caixas de Métricas (st.metric) */
+    /* Caixas de Métricas Responsivas */
     div[data-testid="stMetricSimpleContainer"], div[data-testid="stMetricContainer"] {
         background-color: #0c1929 !important;
         border: 1px solid #154c79 !important;
-        padding: 15px !important;
+        padding: 12px !important; /* Menor padding para telas pequenas */
         border-radius: 10px !important;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
+        margin-bottom: 10px !important; /* Espaço quando empilhar no mobile */
     }
 
-    /* Cor do texto do rótulo (Label) e valor numérico da métrica */
-    div[data-testid="stMetricLabel"] > div, div[data-testid="stMetricValue"] > div {
+    /* Ajuste de tamanho de fonte para métricas no celular */
+    div[data-testid="stMetricLabel"] > div {
         color: #ffffff !important;
-        font-weight: bold !important;
+        font-size: 0.9rem !important; /* Fonte ligeiramente menor */
     }
 
-    /* 4. Ajustar blocos de st.info para combinar com o fundo escuro */
+    div[data-testid="stMetricValue"] {
+        color: #ffffff !important;
+        font-size: 1.5rem !important; /* Fonte menor para não quebrar linha */
+    }
+
+    /* Notificações responsivas */
     div[data-testid="stNotification"] {
         background-color: #154c79 !important;
         color: #ffffff !important;
@@ -60,56 +71,76 @@ tema_azul_escuro = """
         color: #ffffff !important;
     }
 
-    /* 5. Customizar a cor da Barra de Progresso */
-    .stProgress > div > div > div > div {
-        background-image: linear-gradient(to right, #154c79, #4a90e2) !important;
-    }
-
-    /* Ajustar inputs e seletores para não sumirem no fundo escuro */
-    .stSelectbox div, .stMultiSelect div {
-        color: #000000 !important; /* Texto interno em preto para leitura ao digitar */
+    /* Media query para ajustes finos em telas menores que 768px (Celulares) */
+    @media (max-width: 768px) {
+        .stApp {
+            padding: 10px !important;
+        }
+        /* Força as colunas a terem um espaçamento limpo ao empilhar */
+        [data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+        }
     }
     </style>
 """
-st.markdown(tema_azul_escuro, unsafe_allow_html=True)
+st.markdown(tema_azul_escuro_mobile, unsafe_allow_html=True)
 
 st.subheader("Insurance Descriptive Analytics")
 st.markdown("##")
 
-# Busca de dados e definição correta das colunas
+## 1. Buscar dados e criar o DataFrame base
 result = view_all_data()
 df = pd.DataFrame(result, columns=["COL 1", "COL 2", "COL 3", "Investment", "Rating", "BusinessType"])
 
-# Barra lateral - Logotipo
+# --- BARRA LATERAL ---
+# Exibir logotipo com tratamento de erro
 if os.path.exists("data/logo1.webp"):
     st.sidebar.image("data/logo1.webp", caption="Online Analytics")
 else:
-    st.sidebar.warning("Logo não encontrada em data/logo1.webp")
+    st.sidebar.warning("Logo não encontrada")
 
 st.sidebar.header("Por favor, filtre:")
 
-# Filtros da barra lateral
+# FILTRO 1: Região (Filtro Pai)
 region = st.sidebar.selectbox(
     "Selecione a Região",
     options=df["COL 1"].unique()
 )
 
+# FILTRAGEM INTERMEDIÁRIA: Cria um dataframe temporário apenas com a região selecionada
+# Isso garante que o celular não trave e nem limpe os dados por filtros conflitantes
+df_filtrado_por_regiao = df[df["COL 1"] == region]
+
+# FILTRO 2: Localização (Baseado apenas na região escolhida)
+opcoes_localizacao = df_filtrado_por_regiao["COL 2"].unique()
 location = st.sidebar.multiselect(
     "Select Location",
-    options=df["COL 2"].unique(),
-    default=df["COL 2"].unique(),
+    options=opcoes_localizacao,
+    default=opcoes_localizacao, # Agora o padrão são apenas as cidades daquela região
 )
+
+# FILTRO 3: Construção (Baseado na região e nas cidades selecionadas)
+df_filtrado_por_local = df_filtrado_por_regiao[df_filtrado_por_regiao["COL 2"].isin(location)]
+opcoes_construcao = df_filtrado_por_local["COL 3"].unique()
 
 construction = st.sidebar.multiselect(
     "Select Construction",
-    options=df["COL 3"].unique(),
-    default=df["COL 3"].unique(),
+    options=opcoes_construcao,
+    default=opcoes_construcao, # Agora o padrão se adapta dinamicamente
 )
 
-# Aplicação dos filtros no DataFrame
-df_selection = df.query(
-    "`COL 1` == @region & `COL 2` in @location & `COL 3` in @construction"
-)
+# 2. Aplicação final e segura dos filtros para gerar o DataFrame do Dashboard
+df_selection = df_filtrado_por_local[df_filtrado_por_local["COL 3"].isin(construction)]
+
+# --- PROTEÇÃO CONTRA CONTEÚDO VAZIO ---
+# Se o filtro resultar em nada, avisa o usuário em vez de quebrar a tela do celular
+if df_selection.empty:
+    st.warning("⚠️ Nenhum dado encontrado para a combinação de filtros selecionada.")
+else:
+    # Coloque aqui os seus blocos de st.metric, st.plotly_chart, etc.
+    # Exemplo:
+    st.success(f"Dados carregados com sucesso! Linhas disponíveis: {len(df_selection)}")
 
 # --- CÁLCULO DAS MÉTRICAS ---
 df_selection["Investment"] = pd.to_numeric(df_selection["Investment"], errors='coerce').fillna(0)
