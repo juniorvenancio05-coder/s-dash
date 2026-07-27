@@ -26,7 +26,9 @@ if "page" in params:
 
 # --- FORÇAR TEMA AZUL ESCURO E MENU SUPERIOR ---
 tema_azul_escuro_topo = """
-  <style>
+  # 1. BLOCO DE CONFIGURAÇÃO VISUAL (Apenas CSS válido)
+st.markdown("""
+<style>
     /* Ocultar menus e rodapés padrões do Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -46,7 +48,7 @@ tema_azul_escuro_topo = """
     h1, h2, h3, h4, h5, h6, p, label, .stSubheader {
         color: #ffffff !important;
     }
-st.image("logo1.webp", width=150)  
+
     /* BARRA DE NAVEGAÇÃO SUPERIOR HTML */
     .navbar {
         background-color: #0c1929;
@@ -90,10 +92,10 @@ st.image("logo1.webp", width=150)
     div[data-testid="stMetricSimpleContainer"], div[data-testid="stMetricContainer"] {
         background-color: #0c1929 !important;
         border: 1px solid #154c79 !important;
-        padding: 12px !important; 
+        padding: 12px !important;
         border-radius: 10px !important;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
-        margin-bottom: 10px !important; 
+        margin-bottom: 10px !important;
     }
 
     div[data-testid="stMetricLabel"] > div { color: #ffffff !important; font-size: 0.9rem !important; }
@@ -103,6 +105,14 @@ st.image("logo1.webp", width=150)
     div[data-baseweb="select"] {
         background-color: #0c1929 !important;
         color: white !important;
+    }
+
+    /* Estilo específico para envolver a imagem da logo */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        width: 100%;
     }
 
     /* AJUSTES DE CENTRALIZAÇÃO PARA CELULAR */
@@ -122,7 +132,6 @@ st.image("logo1.webp", width=150)
             display: block;
             width: 100%;
         }
-        /* Força as colunas empilhadas a centralizarem seus conteúdos internos (gráficos, tabelas, etc) */
         [data-testid="column"] {
             width: 100% !important;
             flex: 1 1 100% !important;
@@ -132,12 +141,10 @@ st.image("logo1.webp", width=150)
             justify-content: center !important;
             text-align: center !important;
         }
-        /* Centraliza os títulos e textos normais no celular */
         .stMarkdown, .stText, h1, h2, h3, p, label {
             text-align: center !important;
             width: 100%;
         }
-        /* Ajusta o tamanho dos widgets para não quebrarem layout */
         div[data-baseweb="select"], .stMultiSelect, .stSelectbox {
             width: 100% !important;
             max-width: 400px;
@@ -145,6 +152,13 @@ st.image("logo1.webp", width=150)
         }
     }
 </style>
+""", unsafe_allow_html=True)
+
+# 2. ADICIONA A IMAGEM FORA DO CSS E ENVOLVIDA POR UM CONTAINER CENTRALIZADOR
+st.markdown('<div class="logo-container">', unsafe_allow_html=True)
+st.image("logo1.webp", width=150)
+st.markdown('</div>', unsafe_allow_html=True)
+
 
 """
 st.markdown(tema_azul_escuro_topo, unsafe_allow_html=True)
