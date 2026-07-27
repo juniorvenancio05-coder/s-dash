@@ -26,8 +26,7 @@ if "page" in params:
 
 # --- FORÇAR TEMA AZUL ESCURO E MENU SUPERIOR ---
 tema_azul_escuro_topo = """
-  # 1. BLOCO DE CONFIGURAÇÃO VISUAL (Apenas CSS válido)
-st.markdown("""
+  
 import streamlit as st
 
 st.markdown("""
@@ -155,9 +154,9 @@ st.markdown("""
         }
     }
 </style>
-""", unsafe_allow_html=True)
-# FIM DO BLOCO DE CSS
-
+""",
+    unsafe_allow_html=True
+)
 # Imagem centralizada maior (mudou de 150 para 250)
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
 st.image("data/logo1.webp", width=250)
@@ -227,33 +226,42 @@ rating_sum = float(df_selection["Rating"].sum())
 
 # --- EXIBIÇÃO CONDICIONAL DE CONTEÚDO ---
 if st.session_state.aba_atual == "Home":
-    # Renderização da aba principal (Métricas + Tabela)
+    # 1. Recalcula as métricas dinâmicas com base no DataFrame filtrado (df_selection)
+    if not df_selection.empty:
+        try:
+            total_investment = int(df_selection["Investment"].sum())
+            investment_mean = round(df_selection["Investment"].mean(), 2)
+            investment_median = df_selection["Investment"].median()
+
+            # Tratamento para a Moda (retorna o primeiro valor se houver mais de um)
+            mode_series = df_selection["Investment"].mode()
+            investment_mode = mode_series.iloc[0] if not mode_series.empty else 0
+
+            rating_sum = df_selection["Rating"].sum()
+        except Exception:
+            total_investment = investment_mean = investment_median = investment_mode = rating_sum = 0
+    else:
+        total_investment = investment_mean = investment_median = investment_mode = rating_sum = 0
+
+    # 2. Renderização das colunas de métricas atualizadas
     total1, total2, total3, total4, total5 = st.columns(5)
 
     with total1:
-        st.metric(label="📊 Total Investment", value=f"{total_investment:,.0f}")
+        st.metric(label="📊 Total Investment", value=f"R$ {total_investment:,.0f}".replace(",", "."))
     with total2:
-        st.metric(label="🔝 Most Frequent", value=f"{investment_mode:,.0f}")
+        st.metric(label="🔝 Most Frequent", value=f"R$ {investment_mode:,.0f}".replace(",", "."))
     with total3:
-        st.metric(label="📈 Average", value=f"{investment_mean:,.0f}")
+        st.metric(label="📈 Average", value=f"R$ {investment_mean:,.0f}".replace(",", "."))
     with total4:
-        st.metric(label="🎯 Central Earnings", value=f"{investment_median:,.0f}")
+        st.metric(label="🎯 Central Earnings", value=f"R$ {investment_median:,.0f}".replace(",", "."))
     with total5:
         st.metric(label="⭐ Rating Total", value=numerize(rating_sum), help=f"Total: {rating_sum}")
 
-    st.markdown("##")
+    st.divider()
 
-    with st.expander("Tabular View", expanded=True):
-        showData = st.multiselect('Filter Columns:', options=list(df_selection.columns),
-                                  key='multiselect_filter_columns_unique')
-        df_to_show = df_selection[showData] if showData else df_selection
+    # 3. Chama os gráficos de montanha que usam o mesmo df_selection
+    graphs()
 
-        if not df_to_show.empty:
-            if "Investment" in df_to_show.columns:
-                styled_df = df_to_show.style.background_gradient(cmap="Blues", subset=["Investment"])
-                st.dataframe(styled_df, width="stretch")
-            else:
-                st.dataframe(df_to_show, width="stretch")
 
 elif st.session_state.aba_atual == "Gráficos":
     # 1. LIMPEZA DOS DADOS (Remove espaços, R$, pontos de milhar e força conversão para número)
@@ -371,73 +379,66 @@ total1, total2, total3, total4, total5 = st.columns(5, gap="large")
 
 # --- FUNÇÃO DOS GRÁFICOS COMPATÍVEIS ---
 def graphs():
-    # Verifica se o DataFrame não está vazio primeiro para evitar erros de cálculo
     if not df_selection.empty:
         try:
-            # 1. Cálculos de métricas (Corrigido o erro de digitação de round e int)
             total_investment = int(df_selection["Investment"].sum())
             averageRating = round(df_selection["Rating"].mean(), 2)
         except Exception:
-            pass # Previne travamentos caso colunas tenham textos inesperados
+            total_investment = 0
+            averageRating = 0.0
 
-        # 2. Agrupamento por Tipo de Negócio (Business Type)
+        # 2. Agrupamento por Tipo de Negócio (Ordenação em pirâmide para efeito de pico)
         investment_by_business_type = df_selection.groupby(by=["BusinessType"], as_index=False)["Investment"].sum()
+        # Ordenamos do menor para o maior para criar uma rampa/encosta de montanha
         investment_by_business_type = investment_by_business_type.sort_values(by="Investment", ascending=True)
 
-        fig_investment = px.bar(
+        fig_investment = px.area(
             investment_by_business_type,
-            x="Investment",
-            y="BusinessType",
-            orientation="h",
+            x="BusinessType",
+            y="Investment",
             title="<b>Investment by Business Type</b>",
-            color_discrete_sequence=["#154c79"],
             template="plotly_dark",
+            line_shape="spline"  # Define as bordas como curvas suaves diretamente
         )
+        # Força o preenchimento sólido da linha até o chão e cor azul montanha
+        fig_investment.update_traces(fill="tozeroy", line=dict(color="#154c79", width=3))
 
-        # 3. Agrupamento por Localização (COL 2)
+        # 3. Agrupamento por Localização
         investment_by_state = df_selection.groupby(by=["COL 2"], as_index=False)["Investment"].sum()
         investment_by_state = investment_by_state.sort_values(by="Investment", ascending=True)
 
-        fig_state = px.bar(
+        fig_state = px.area(
             investment_by_state,
-            x="Investment",
-            y="COL 2",
-            orientation="h",
+            x="COL 2",
+            y="Investment",
             title="<b>Investment by Location</b>",
-            color_discrete_sequence=["#154c79"],
             template="plotly_dark",
+            line_shape="spline"
         )
+        fig_state.update_traces(fill="tozeroy", line=dict(color="#154c79", width=3))
 
-        # 4. Ajustes visuais para remover fundos cinzas e adaptar ao celular
-        # Garante que o interior do gráfico use linhas de grade vermelhas
-        fig_state.update_layout(
-            autosize=True,
-            margin=dict(l=20, r=20, t=40, b=20),
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=True, gridcolor="#ff0000", title_font=dict(color='white'),
-                       tickfont=dict(color='white')),
-            yaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
-            title_font=dict(color='white')
-        )
+        # 4. Ajustes visuais comuns
+        for fig in [fig_investment, fig_state]:
+            fig.update_layout(
+                autosize=True,
+                margin=dict(l=20, r=20, t=40, b=20),
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                # Linhas de grade sutis no eixo Y para medir a altura da montanha
+                yaxis=dict(showgrid=True, gridcolor="rgba(255,255,255,0.1)", title_font=dict(color='white'),
+                           tickfont=dict(color='white')),
+                xaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
+                title_font=dict(color='white')
+            )
 
-        fig_investment.update_layout(
-            autosize=True,
-            margin=dict(l=20, r=20, t=40, b=20),
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=True, gridcolor="#ff0000", title_font=dict(color='white'),
-                       tickfont=dict(color='white')),
-            yaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
-            title_font=dict(color='white')
-        )
-
-        # 5. Renderização das colunas (ATUALIZADO: width="stretch" no lugar de use_container_width)
         left, right = st.columns(2)
-        left.plotly_chart(fig_investment, width="stretch")
-        right.plotly_chart(fig_state, width="stretch")
+        left.plotly_chart(fig_investment, use_container_width=True)
+        right.plotly_chart(fig_state, use_container_width=True)
+
+        return total_investment, averageRating
     else:
         st.warning("Nenhum dado encontrado para gerar gráficos.")
+        return 0, 0.0
 
 
 # --- FUNÇÃO DA BARRA DE PROGRESSO ---
