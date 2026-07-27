@@ -244,59 +244,90 @@ if st.session_state.aba_atual == "Home":
     st.markdown("##")
 
     with st.expander("Tabular View", expanded=True):
-        showData = st.multiselect('Filter Columns:', options=list(df_selection.columns))
+        showData = st.multiselect('Filter Columns:', options=list(df_selection.columns),
+                                  key='multiselect_filter_columns_unique')
         df_to_show = df_selection[showData] if showData else df_selection
 
         if not df_to_show.empty:
             if "Investment" in df_to_show.columns:
                 styled_df = df_to_show.style.background_gradient(cmap="Blues", subset=["Investment"])
-                st.dataframe(styled_df, use_container_width=True)
+                st.dataframe(styled_df, width="stretch")
             else:
-                st.dataframe(df_to_show, use_container_width=True)
+                st.dataframe(df_to_show, width="stretch")
 
 elif st.session_state.aba_atual == "Gráficos":
-    # Renderização da aba de gráficos
+    # CORREÇÃO 1: Garante que os dados de ambos os gráficos sejam gerados corretamente
     investment_by_business_type = df_selection.groupby(by=["BusinessType"], as_index=False)[
         "Investment"].sum().sort_values(by="Investment", ascending=True)
-    fig_investment = px.bar(
-        investment_by_business_type, x="Investment", y="BusinessType", orientation="h",
-        title="<b>Investment by Business Type</b>", color_discrete_sequence=["#154c79"], template="plotly_dark"
-    )
 
+    # Criando o agrupamento por Estado/Localização que estava faltando no seu bloco!
     investment_by_state = df_selection.groupby(by=["COL 2"], as_index=False)["Investment"].sum().sort_values(
         by="Investment", ascending=True)
-    fig_state = px.bar(
-        investment_by_state, x="Investment", y="COL 2", orientation="h",
-        title="<b>Investment by Location</b>", color_discrete_sequence=["#154c79"], template="plotly_dark"
+
+    # 2. Gráfico de Tipo de Negócio (BusinessType)
+    fig_investment = px.bar(
+        investment_by_business_type,
+        x="Investment",
+        y="BusinessType",
+        orientation="h",
+        title="<b>Investment by Business Type</b>",
+        color_discrete_sequence=["#00ffcc"],  # Cor vibrante (Ciano) para destacar no fundo escuro
+        template="plotly_dark",
     )
 
-    for fig in [fig_investment, fig_state]:
-        fig.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="#001122", font_color="#ffffff",
-                          margin=dict(l=20, r=20, t=40, b=20))
+    # 3. Gráfico de Localização (COL 2)
+    fig_state = px.bar(
+        investment_by_state,
+        x="Investment",
+        y="COL 2",
+        orientation="h",
+        title="<b>Investment by Location</b>",
+        color_discrete_sequence=["#00ffcc"],  # Cor vibrante (Ciano) para destacar no fundo escuro
+        template="plotly_dark",
+    )
+
+    # Garante que o interior do gráfico use cores contrastantes e limpas
+    fig_state.update_layout(
+        autosize=True,
+        margin=dict(l=20, r=20, t=40, b=20),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(showgrid=True, gridcolor="#2e374a", title_font=dict(color='white'), tickfont=dict(color='white')),
+        yaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
+        title_font=dict(color='white')
+    )
+
+    fig_investment.update_layout(
+        autosize=True,
+        margin=dict(l=20, r=20, t=40, b=20),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        xaxis=dict(showgrid=True, gridcolor="#2e374a", title_font=dict(color='white'), tickfont=dict(color='white')),
+        yaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
+        title_font=dict(color='white')
+    )
 
     col_grafico1, col_grafico2 = st.columns(2)
     with col_grafico1:
-        st.plotly_chart(fig_investment, use_container_width=True)
+        st.plotly_chart(fig_investment, width="stretch")
     with col_grafico2:
-        st.plotly_chart(fig_state, use_container_width=True)
+        st.plotly_chart(fig_state, width="stretch")
 
-    with a1:
-        st.subheader("Product e Quantities", divider='rainbow')
+    # CORREÇÃO: Certificando-se de criar ou usar um container para o Altair (substituindo a1 solto se necessário)
+    st.subheader("Product e Quantities", divider='rainbow')
 
-        # Criando o DataFrame corrigindo as aspas e colchetes
-        source = pd.DataFrame({
-            "Quantity ($)": df2["Quantity ($)"],
-            "Product": df2["Product"]
-        })
+    # Criando o DataFrame corrigindo as aspas e colchetes
+    source = pd.DataFrame({
+        "Quantity ($)": df2["Quantity ($)"],
+        "Product": df2["Product"]
+    })
 
-        # Criando o gráfico Altair corrigindo a sintaxe do encode e o erro de digitação em 'Quantity'
-        bar_chart = alt.Chart(source).mark_bar().encode(
-            x="sum(Quantity ($)):Q",
-            y=alt.Y("Product:N", sort="-x")
-        )
-        st.altair_chart(bar_chart, use_container_width=True)
-
-    # --- FUNÇÃO DA VISUALIZAÇÃO TABULAR COLORIDA ---
+    # Criando o gráfico Altair corrigindo a sintaxe do encode e o erro de digitação em 'Quantity'
+    bar_chart = alt.Chart(source).mark_bar().encode(
+        x="sum(Quantity ($)):Q",
+        y=alt.Y("Product:N", sort="-x")
+    )
+    st.altair_chart(bar_chart, width="stretch")
 
 
 def Home():
