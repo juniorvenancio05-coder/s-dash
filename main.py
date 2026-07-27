@@ -345,8 +345,10 @@ elif st.session_state.aba_atual == "Gráficos":
 
 def Home():
     with st.expander("Tabular View"):
+        # Cria uma chave dinâmica baseada na aba selecionada para nunca duplicar
+        aba_nome = st.session_state.get("aba_atual", "default")
         showData = st.multiselect('Filter Columns:', options=list(df_selection.columns),
-                                  key='multiselect_filter_columns_unique')
+                                  key=f'multiselect_filter_{aba_nome}')
 
         df_to_show = df_selection[showData] if showData else df_selection
 
