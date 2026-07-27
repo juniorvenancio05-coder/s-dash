@@ -409,13 +409,16 @@ def graphs():
         )
 
         # 4. Ajustes visuais para remover fundos cinzas e adaptar ao celular
+        # Garante que o interior do gráfico use linhas de grade vermelhas
         fig_state.update_layout(
             autosize=True,
             margin=dict(l=20, r=20, t=40, b=20),
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=True, gridcolor="#2e374a"),
-            yaxis=dict(showgrid=False)
+            xaxis=dict(showgrid=True, gridcolor="#ff0000", title_font=dict(color='white'),
+                       tickfont=dict(color='white')),
+            yaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
+            title_font=dict(color='white')
         )
 
         fig_investment.update_layout(
@@ -423,8 +426,10 @@ def graphs():
             margin=dict(l=20, r=20, t=40, b=20),
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
-            xaxis=dict(showgrid=True, gridcolor="#2e374a"),
-            yaxis=dict(showgrid=False)
+            xaxis=dict(showgrid=True, gridcolor="#ff0000", title_font=dict(color='white'),
+                       tickfont=dict(color='white')),
+            yaxis=dict(showgrid=False, title_font=dict(color='white'), tickfont=dict(color='white')),
+            title_font=dict(color='white')
         )
 
         # 5. Renderização das colunas (ATUALIZADO: width="stretch" no lugar de use_container_width)
