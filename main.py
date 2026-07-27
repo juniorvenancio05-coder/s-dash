@@ -310,13 +310,17 @@ def Home():
             if "Investment" in df_to_show.columns:
                 # Gradiente de cor azul escuro que combina com o tema da página
                 styled_df = df_to_show.style.background_gradient(cmap="Blues", subset=["Investment"])
-                st.dataframe(styled_df, use_container_width=True)
+                # ATUALIZADO: Substituído use_container_width por width="stretch"
+                st.dataframe(styled_df, width="stretch")
             else:
-                st.dataframe(df_to_show, use_container_width=True)
+                # ATUALIZADO: Substituído use_container_width por width="stretch"
+                st.dataframe(df_to_show, width="stretch")
         else:
             st.warning("Nenhum dado para exibir.")
 
-total1, total2, total3, total4, total5=st.columns(5, gap="large")
+# Criação das colunas de métricas de forma responsiva
+total1, total2, total3, total4, total5 = st.columns(5, gap="large")
+
 
 
 # --- FUNÇÃO DOS GRÁFICOS COMPATÍVEIS ---
