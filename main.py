@@ -156,7 +156,7 @@ st.markdown("""
 
 # 2. ADICIONA A IMAGEM FORA DO CSS E ENVOLVIDA POR UM CONTAINER CENTRALIZADOR
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
-st.image("logo1.webp", width=150)
+st.image("data/logo1.webp", width=150)
 st.markdown('</div>', unsafe_allow_html=True)
 
 
