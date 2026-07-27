@@ -315,7 +315,8 @@ def Home():
                 st.dataframe(df_to_show, use_container_width=True)
         else:
             st.warning("Nenhum dado para exibir.")
-total_investment=float(df_selection["investment"]).sum(0)
+total_investment = float(df_selection["Investment"].sum())
+
 investment_mode=float(df_selection["Investment"]).mode()
 investment_mean=float(df_selection["Investment"]).mean()
 investment_median=float(df_selection["Investment"]).median()
