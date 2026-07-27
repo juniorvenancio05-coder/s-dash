@@ -256,13 +256,26 @@ if st.session_state.aba_atual == "Home":
                 st.dataframe(df_to_show, width="stretch")
 
 elif st.session_state.aba_atual == "Gráficos":
-    # CORREÇÃO 1: Garante que os dados de ambos os gráficos sejam gerados corretamente
-    investment_by_business_type = df_selection.groupby(by=["BusinessType"], as_index=False)[
-        "Investment"].sum().sort_values(by="Investment", ascending=True)
+    # 1. LIMPEZA DOS DADOS (Remove espaços, R$, pontos de milhar e força conversão para número)
+    if "Investment" in df_selection.columns:
+        # Se os dados forem strings, converte para numérico limpo
+        if df_selection["Investment"].dtype == 'object':
+            df_selection["Investment"] = (
+                df_selection["Investment"]
+                .astype(str)
+                .str.replace(r'[^\d,.-]', '', regex=True) # Remove símbolos como R$ ou US$
+                .str.replace('.', '', regex=False)        # Remove ponto de milhar
+                .str.replace(',', '.', regex=False)        # Transforma vírgula decimal em ponto
+            )
+        # Força a coluna a ser tratada como número (ignora erros transformando em NaN)
+        df_selection["Investment"] = pd.to_numeric(df_selection["Investment"], errors='coerce').fillna(0)
 
-    # Criando o agrupamento por Estado/Localização que estava faltando no seu bloco!
-    investment_by_state = df_selection.groupby(by=["COL 2"], as_index=False)["Investment"].sum().sort_values(
-        by="Investment", ascending=True)
+    # 2. AGRUPAMENTOS DOS GRÁFICOS (Agora com números garantidos)
+    investment_by_business_type = df_selection.groupby(by=["BusinessType"], as_index=False)["Investment"].sum().sort_values(by="Investment", ascending=True)
+    investment_by_state = df_selection.groupby(by=["COL 2"], as_index=False)["Investment"].sum().sort_values(by="Investment", ascending=True)
+
+    # ... Resto do código dos gráficos (fig_investment, fig_state) continua igual abaixo ...
+
 
     # 2. Gráfico de Tipo de Negócio (BusinessType)
     fig_investment = px.bar(
