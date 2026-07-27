@@ -30,7 +30,6 @@ tema_azul_escuro_topo = """
 st.markdown("""
 import streamlit as st
 
-# Certifique-se de que ABRIU com st.markdown("""
 st.markdown("""
 <style>
     /* Ocultar menus e rodapés padrões do Streamlit */
@@ -156,9 +155,10 @@ st.markdown("""
         }
     }
 </style>
-""", unsafe_allow_html=True) # Certifique-se de que FECHOU com """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
+# FIM DO BLOCO DE CSS
 
-# Imagem (apontando para a pasta certa que você mencionou)
+# Imagem centralizada fora do CSS apontando para a pasta data
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
 st.image("data/logo1.webp", width=150)
 st.markdown('</div>', unsafe_allow_html=True)
