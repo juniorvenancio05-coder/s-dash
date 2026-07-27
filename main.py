@@ -280,8 +280,25 @@ elif st.session_state.aba_atual == "Gráficos":
     with col_grafico2:
         st.plotly_chart(fig_state, use_container_width=True)
 
+    with a1:
+        st.subheader("Product e Quantities", divider='rainbow')
 
-# --- FUNÇÃO DA VISUALIZAÇÃO TABULAR COLORIDA ---
+        # Criando o DataFrame corrigindo as aspas e colchetes
+        source = pd.DataFrame({
+            "Quantity ($)": df2["Quantity ($)"],
+            "Product": df2["Product"]
+        })
+
+        # Criando o gráfico Altair corrigindo a sintaxe do encode e o erro de digitação em 'Quantity'
+        bar_chart = alt.Chart(source).mark_bar().encode(
+            x="sum(Quantity ($)):Q",
+            y=alt.Y("Product:N", sort="-x")
+        )
+        st.altair_chart(bar_chart, use_container_width=True)
+
+    # --- FUNÇÃO DA VISUALIZAÇÃO TABULAR COLORIDA ---
+
+
 def Home():
     with st.expander("Tabular View"):
         showData = st.multiselect('Filter Columns:', options=list(df_selection.columns),
@@ -298,11 +315,27 @@ def Home():
                 st.dataframe(df_to_show, use_container_width=True)
         else:
             st.warning("Nenhum dado para exibir.")
+total_investment=float(df_selection["investment"]).sum(0)
+investment_mode=float(df_selection["Investment"]).mode()
+investment_mean=float(df_selection["Investment"]).mean()
+investment_median=float(df_selection["Investment"]).median()
+rating=float(df_selection["Rating"]).sum
+
+total1, total2, total3, total4, total5=st.columns(5, gap="large")
 
 
 # --- FUNÇÃO DOS GRÁFICOS COMPATÍVEIS ---
 def graphs():
+    # Verifica se o DataFrame não está vazio primeiro para evitar erros de cálculo
     if not df_selection.empty:
+        try:
+            # 1. Cálculos de métricas (Corrigido o erro de digitação de round e int)
+            total_investment = int(df_selection["Investment"].sum())
+            averageRating = round(df_selection["Rating"].mean(), 2)
+        except Exception:
+            pass # Previne travamentos caso colunas tenham textos inesperados
+
+        # 2. Agrupamento por Tipo de Negócio (Business Type)
         investment_by_business_type = df_selection.groupby(by=["BusinessType"], as_index=False)["Investment"].sum()
         investment_by_business_type = investment_by_business_type.sort_values(by="Investment", ascending=True)
 
@@ -313,9 +346,10 @@ def graphs():
             orientation="h",
             title="<b>Investment by Business Type</b>",
             color_discrete_sequence=["#154c79"],
-            template="plotly_dark",  # Força os gráficos a usarem fundo escuro
+            template="plotly_dark",
         )
 
+        # 3. Agrupamento por Localização (COL 2)
         investment_by_state = df_selection.groupby(by=["COL 2"], as_index=False)["Investment"].sum()
         investment_by_state = investment_by_state.sort_values(by="Investment", ascending=True)
 
@@ -326,14 +360,13 @@ def graphs():
             orientation="h",
             title="<b>Investment by Location</b>",
             color_discrete_sequence=["#154c79"],
-            template="plotly_dark",  # Força os gráficos a usarem fundo escuro
+            template="plotly_dark",
         )
 
-        # Remove fundos cinzas do Plotly para fundir perfeitamente com o fundo azul escuro do app
-        # Adicione essas atualizações de layout logo após criar fig_state e fig_investment:
+        # 4. Ajustes visuais para remover fundos cinzas e adaptar ao celular
         fig_state.update_layout(
             autosize=True,
-            margin=dict(l=20, r=20, t=40, b=20),  # Reduz as margens laterais no celular
+            margin=dict(l=20, r=20, t=40, b=20),
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
             xaxis=dict(showgrid=True, gridcolor="#2e374a"),
@@ -349,9 +382,10 @@ def graphs():
             yaxis=dict(showgrid=False)
         )
 
+        # 5. Renderização das colunas (ATUALIZADO: width="stretch" no lugar de use_container_width)
         left, right = st.columns(2)
-        left.plotly_chart(fig_investment, use_container_width=True)
-        right.plotly_chart(fig_state, use_container_width=True)
+        left.plotly_chart(fig_investment, width="stretch")
+        right.plotly_chart(fig_state, width="stretch")
     else:
         st.warning("Nenhum dado encontrado para gerar gráficos.")
 
