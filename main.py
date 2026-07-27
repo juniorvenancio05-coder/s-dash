@@ -158,10 +158,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # FIM DO BLOCO DE CSS
 
-# Imagem centralizada fora do CSS apontando para a pasta data
+# Imagem centralizada maior (mudou de 150 para 250)
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
-st.image("data/logo1.webp", width=150)
+st.image("data/logo1.webp", width=250)
 st.markdown('</div>', unsafe_allow_html=True)
+
 
 st.markdown(tema_azul_escuro_topo, unsafe_allow_html=True)
 
