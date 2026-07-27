@@ -46,7 +46,7 @@ tema_azul_escuro_topo = """
     h1, h2, h3, h4, h5, h6, p, label, .stSubheader {
         color: #ffffff !important;
     }
-
+st.image("logo1.webp", width=150)  
     /* BARRA DE NAVEGAÇÃO SUPERIOR HTML */
     .navbar {
         background-color: #0c1929;
