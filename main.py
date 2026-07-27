@@ -28,6 +28,10 @@ if "page" in params:
 tema_azul_escuro_topo = """
   # 1. BLOCO DE CONFIGURAÇÃO VISUAL (Apenas CSS válido)
 st.markdown("""
+import streamlit as st
+
+# Certifique-se de que ABRIU com st.markdown("""
+st.markdown("""
 <style>
     /* Ocultar menus e rodapés padrões do Streamlit */
     #MainMenu {visibility: hidden;}
@@ -92,10 +96,10 @@ st.markdown("""
     div[data-testid="stMetricSimpleContainer"], div[data-testid="stMetricContainer"] {
         background-color: #0c1929 !important;
         border: 1px solid #154c79 !important;
-        padding: 12px !important;
+        padding: 12px !important; 
         border-radius: 10px !important;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
-        margin-bottom: 10px !important;
+        margin-bottom: 10px !important; 
     }
 
     div[data-testid="stMetricLabel"] > div { color: #ffffff !important; font-size: 0.9rem !important; }
@@ -152,15 +156,13 @@ st.markdown("""
         }
     }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True) # Certifique-se de que FECHOU com """, unsafe_allow_html=True)
 
-# 2. ADICIONA A IMAGEM FORA DO CSS E ENVOLVIDA POR UM CONTAINER CENTRALIZADOR
+# Imagem (apontando para a pasta certa que você mencionou)
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
 st.image("data/logo1.webp", width=150)
 st.markdown('</div>', unsafe_allow_html=True)
 
-
-"""
 st.markdown(tema_azul_escuro_topo, unsafe_allow_html=True)
 
 # --- RENDERIZAÇÃO DO MENU SUPERIOR (HTML) ---
