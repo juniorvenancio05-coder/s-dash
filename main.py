@@ -27,25 +27,11 @@ if "page" in params:
 # --- FORÇAR TEMA AZUL ESCURO E MENU SUPERIOR ---
 tema_azul_escuro_topo = """
   
-import streamlit as st
 
-st.markdown("""
-<style>
-    /* Ocultar menus e rodapés padrões do Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
 
-    /* Remover completamente o botão e espaço da barra lateral */
-    section[data-testid="stSidebar"] {display: none;}
-    button[data-testid="sidebar-collapse-button"] {display: none;}
-
-    /* Fundo geral da página */
-    .stApp {
-        background-color: #001122 !important;
-        color: #ffffff !important;
-    }
-
+st.markdown(
+    """
+    <style>
     /* Cores de texto globais */
     h1, h2, h3, h4, h5, h6, p, label, .stSubheader {
         color: #ffffff !important;
@@ -94,10 +80,10 @@ st.markdown("""
     div[data-testid="stMetricSimpleContainer"], div[data-testid="stMetricContainer"] {
         background-color: #0c1929 !important;
         border: 1px solid #154c79 !important;
-        padding: 12px !important; 
+        padding: 12px !important;
         border-radius: 10px !important;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important;
-        margin-bottom: 10px !important; 
+        margin-bottom: 10px !important;
     }
 
     div[data-testid="stMetricLabel"] > div { color: #ffffff !important; font-size: 0.9rem !important; }
@@ -153,10 +139,11 @@ st.markdown("""
             margin: 0 auto !important;
         }
     }
-</style>
-""",
+    </style>
+    """,
     unsafe_allow_html=True
 )
+
 # Imagem centralizada maior (mudou de 150 para 250)
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
 st.image("data/logo1.webp", width=250)
